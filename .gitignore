@@ -1,2 +1,3 @@
 venv/
 deliberate_v2.safetensors
+cache_folder/

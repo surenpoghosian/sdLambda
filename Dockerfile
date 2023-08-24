@@ -5,6 +5,7 @@ WORKDIR /app
 
 COPY requirements.txt /app/
 COPY generate_image.py /app/
+COPY cache_folder/ /app/cache_folder
 
 # Install system libraries for graphical applications
 RUN apt-get update && \
@@ -26,11 +27,14 @@ WORKDIR /app
 COPY --from=build /app/venv /app/venv
 COPY --from=build /app/generate_image.py /app/
 
+COPY --from=build /app/cache_folder /root/.cache/huggingface/hub/models--CompVis--stable-diffusion-safety-checker/
+
 # Set up environment variables and command
 ENV PATH="/app/venv/bin:$PATH"
 
 # Copy deliberate_v2.safetensors into the container at runtime
 COPY deliberate_v2.safetensors /app/
+
 
 # Install system libraries for graphical applications
 RUN apt-get update && \

@@ -3,7 +3,7 @@ from sdkit.models import load_model
 from sdkit.generate import generate_images
 from sdkit.utils import save_images, log
 import datetime
-
+import torch
 
 def generate_image():
     context = sdkit.Context()
