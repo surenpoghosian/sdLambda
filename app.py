@@ -1,11 +1,10 @@
+import sys
 import sdkit
 from sdkit.models import load_model
 from sdkit.generate import generate_images
 from sdkit.utils import save_images, log
-import datetime
-import torch
 
-def generate_image():
+def handler(event, context):
     context = sdkit.Context()
 
     # set the path to the model file on the disk (.ckpt or .safetensors file)
@@ -22,7 +21,4 @@ def generate_image():
 
     log.info("Generated images!")
 
-
-
-
-generate_image()
+    return 'done'

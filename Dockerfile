@@ -1,44 +1,17 @@
 # Stage 1: Build environment
-FROM python:3.11.4-slim AS build
-
-WORKDIR /app
-
-COPY requirements.txt /app/
-COPY generate_image.py /app/
-COPY cache_folder/ /app/cache_folder
-
-# Install system libraries for graphical applications
-RUN apt-get update && \
-    apt-get install -y libgl1-mesa-glx libglib2.0-0 && \
-    rm -rf /var/lib/apt/lists/*
-
-RUN pip install --no-cache-dir --upgrade pip && \
-    pip install --no-cache-dir virtualenv && \
-    virtualenv /app/venv && \
-    /app/venv/bin/pip install --no-cache-dir -r requirements.txt
-
-COPY . /app/
-
-# Stage 2: Final runtime environment
-FROM python:3.11.4-slim
-
-WORKDIR /app
-
-COPY --from=build /app/venv /app/venv
-COPY --from=build /app/generate_image.py /app/
-
-COPY --from=build /app/cache_folder /root/.cache/huggingface/hub/models--CompVis--stable-diffusion-safety-checker/
-
-# Set up environment variables and command
-ENV PATH="/app/venv/bin:$PATH"
-
-# Copy deliberate_v2.safetensors into the container at runtime
-COPY deliberate_v2.safetensors /app/
+FROM public.ecr.aws/lambda/python:3.8
 
 
-# Install system libraries for graphical applications
-RUN apt-get update && \
-    apt-get install -y libgl1-mesa-glx libglib2.0-0 && \
-    rm -rf /var/lib/apt/lists/*
+COPY requirements.txt ${LAMBDA_TASK_ROOT}
+COPY app.py ${LAMBDA_TASK_ROOT}
+COPY /cache_folder /root/.cache/huggingface/hub/models--CompVis--stable-diffusion-safety-checker/
+COPY deliberate_v2.safetensors ${LAMBDA_TASK_ROOT}
 
-CMD ["python", "generate_image.py"]
+
+RUN pip3 install --no-cache-dir --upgrade pip && \
+    pip3 install -r requirements.txt --target "${LAMBDA_TASK_ROOT}"
+
+RUN yum install -y mesa-libGL mesa-libGLU libglib2.0-0
+
+
+CMD ["app.handler"]
